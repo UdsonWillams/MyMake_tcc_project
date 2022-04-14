@@ -44,8 +44,6 @@ class ListCustomerByEmailView(GenericAPIView):
 
     def post(self, request, **kwargs):
         try:
-            import ipdb
-            ipdb.set_trace()
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
                 response = get_customer(serializer.validated_data["email"])
