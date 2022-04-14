@@ -15,17 +15,32 @@ class CreateCustomerSerializer(serializers.Serializer):
     ]
     model = Customer
 
-class ListUserSerializer(serializers.Serializer):
+class ListCustomerSerializer(serializers.Serializer):
     name = serializers.CharField()
     email = serializers.CharField()
+    total_spend = serializers.IntegerField()
     class Meta:
         fields = [
             "name",
             "email",
+            "total_spend",
         ]
         model = Customer
 
-class UpdateUserSerializer(serializers.Serializer):
+class ListCustomerSerializerByEmail(serializers.Serializer):
+    email = serializers.CharField()
+    class Meta:
+        fields = [
+            "email",
+        ]
+        model = Customer
+    
+    def validate_email(self, value):
+        if Customer.objects.filter(email=value).exists():
+            return value 
+        raise ValueError("Email não Encontrado!")
+        
+class UpdateCustomerSerializer(serializers.Serializer):
     name = serializers.CharField()
     email = serializers.CharField()
     password  = serializers.CharField()

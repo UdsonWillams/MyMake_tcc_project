@@ -8,4 +8,10 @@ class Customer(BaseModel):
     email = models.EmailField()
     password = models.CharField(max_length=50)
     is_active = models.BooleanField(default=True)
-    total_spend = models.IntegerField()
+    total_spend = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.name}"
+
+    def __repr__(self):
+        return f"{self.id}"

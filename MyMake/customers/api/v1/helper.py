@@ -14,3 +14,17 @@ def create_customer(data):
         return response
     except Exception:
         raise ValueError("erro ao cadastrar!")
+
+def get_customer(data):
+    try:
+        customer = Customer.objects.get(email=data)
+        response = {
+            "customer": {
+                "email": customer.email,
+                "esta_ativo": customer.is_active,
+                "total_gasto":customer.total_spend
+            }
+        }
+        return response
+    except Exception:
+        raise ValueError("Erro no get Customer")
