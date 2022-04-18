@@ -7,7 +7,7 @@ from .views import (
     ListCustomerByEmailView,
 )
 
-app_name = "accounts"
+app_name = "customers"
 
 urlpatterns = [
     path("create-user", CreateCustomerView.as_view(), name="create-user"),

@@ -42,7 +42,7 @@ class ListCustomerByEmailView(GenericAPIView):
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, **kwargs):
+    def get(self, request, **kwargs):
         try:
             serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():

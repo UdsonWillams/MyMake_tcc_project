@@ -1,4 +1,5 @@
 from django.db import models
+from products.models import Products
 
 from resources.base import BaseModel
 from customers.models import Customer
@@ -6,7 +7,7 @@ from customers.models import Customer
 # Create your models here.
 class Carts(BaseModel):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, default=None)
-    products = models.CharField(max_length=50)
+    products = models.JSONField()
     quantity = models.PositiveIntegerField(default=0)
 
     def __str__(self):
