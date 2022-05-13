@@ -1,4 +1,4 @@
-from cart.api.v1.helper import actualize_cart, devoluting_products
+from cart.api.v1.helper import actualize_cart, devoluting_products, finalize_cart
 from cart.models import Carts
 from products.models import Products
 from rest_framework.authentication import BasicAuthentication
@@ -26,11 +26,13 @@ class ListCartsView(ListAPIView):
         queryset = Carts.objects.all()    
         return queryset
 
-class ListCartsByIdView(ListAPIView):
-    serializer_class = ConcluirCartsSerializer
+class ListCartsByCustomerView(ListAPIView):
+    serializer_class = ListCartsSerializer
 
     def get_queryset(self):
-        queryset = Carts.objects.all()    
+        queryset = Carts.objects.filter(
+            customer_id=self.kwargs["pk"]
+        )    
         return queryset
 class DeleteCartsView(DestroyAPIView):
     serializer_class = ConcluirCartsSerializer
@@ -43,34 +45,30 @@ class DeleteCartsView(DestroyAPIView):
         try:
             devoluting_status = devoluting_products(kwargs)
             if devoluting_status:
-                return Response({"has_devoluting": devoluting_status}, status=HTTP_204_NO_CONTENT)
+                return Response({"sucess": devoluting_status}, status=HTTP_204_NO_CONTENT)
             else:
-                return Response({"has_devoluting": devoluting_status}, status=HTTP_400_BAD_REQUEST)
+                return Response({"sucess": devoluting_status}, status=HTTP_400_BAD_REQUEST)
         except Exception:
             raise ValueError()
 
 class FinalizeCartsView(DestroyAPIView):
     serializer_class = ConcluirCartsSerializer
 
-    def get_queryset(self):
-        queryset = Carts.objects.all()    
-        return queryset
+    def delete(self, request, *args, **kwargs):
+        try:
+            return Response(finalize_cart(kwargs), status=HTTP_204_NO_CONTENT)
+        except Exception:
+            return Response({"status": "fail", "error": "aconteceu algum problema, desculpe tente novamente!"}, status=HTTP_400_BAD_REQUEST)
 
-class UpdateProductsView(UpdateAPIView):
+class UpdateCartsView(UpdateAPIView):
     serializer_class = ConcluirCartsSerializer
-
-    def get_queryset(self):
-        queryset = Carts.objects.all()    
-        return queryset
 
     def put(self, request, *args, **kwargs):
         try:
-            import ipdb
-            ipdb.set_trace()
             devoluting_status = actualize_cart(url=kwargs, body=request.data)
             if devoluting_status:
-                return Response({"is_actualize": devoluting_status}, status=HTTP_201_CREATED)
+                return Response({"sucess": devoluting_status}, status=HTTP_201_CREATED)
             else:
-                return Response({"is_actualize": devoluting_status}, status=HTTP_400_BAD_REQUEST)
+                return Response({"sucess": devoluting_status}, status=HTTP_400_BAD_REQUEST)
         except Exception:
             raise ValueError()

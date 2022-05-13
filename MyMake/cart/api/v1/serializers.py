@@ -1,36 +1,39 @@
 from products.models import Products
 from cart.models import Carts
 from rest_framework import serializers
-
+from customers.models import Customer
 class ProductsCartSerializer(serializers.ModelSerializer):
     name = serializers.CharField()
-    quantity = serializers.CharField()
+    cart_quantity = serializers.CharField()
     class Meta:
         model = Products
         fields = [
-            "name", 
-            "quantity",
+            "id",
+            "name",
+            "cart_quantity",
         ]
 
 
 class CreateCartsSerializer(serializers.ModelSerializer):
 
     products = ProductsCartSerializer(many=True)
+    
     class Meta:
         model = Carts
         fields = [
             "id",
             "customer", 
-            "products",            
+            "products",
         ]
 
     def validate_products(self, values):
-
         for value in values:
             name = value["name"]
-            quantity = value["quantity"]
-            product = Products.objects.get(name=name)
-
+            quantity = value["cart_quantity"]
+            try:
+                product = Products.objects.get(name=name)
+            except Exception:
+                raise serializers.ValidationError("Produto não encontrado!")
             if int(quantity) <= 0:
                 raise serializers.ValidationError("valores negativos não podem ser atribuidos")
 
@@ -39,34 +42,42 @@ class CreateCartsSerializer(serializers.ModelSerializer):
 
         return values
 
+    def validate_customer(self, value):
+        if Carts.objects.filter(customer_id=value.id).exists():
+            raise serializers.ValidationError("cliente já possui um carrinho!!!")
+        return value
 
     def create(self, validated_data):
-        import ipdb
-        ipdb.set_trace()
         customer = validated_data["customer"]
-        
+        list_of_products = []
+
         for value in validated_data["products"]:
             products_name = value["name"]
-            cart_products_quantity = value["quantity"]          
+            cart_products_quantity = value["cart_quantity"]          
 
-            old_quantity = Products.objects.get(name=products_name)
-            old_quantity = old_quantity.quantity
+            product = Products.objects.get(name=products_name)
+            old_quantity = product.quantity
             new_products_quantity = (int(old_quantity) - int(cart_products_quantity))
-            Products.objects.filter(name=products_name).update(quantity=new_products_quantity)
-        carts = Carts.objects.create(customer=customer, products=validated_data["products"])
+            Products.objects.filter(name=products_name).update(quantity=new_products_quantity, cart_quantity=cart_products_quantity)
+            list_of_products.append(product)
+        carts = Carts(customer=customer)
+        carts.save()
+
+        for i in range(len(list_of_products)):
+            prod = list_of_products[i]
+            carts.products.add(prod)
         return carts
 
 
 class ListCartsSerializer(serializers.Serializer):
     customer = serializers.UUIDField()
-    products = serializers.CharField()
+    products = ProductsCartSerializer(many=True)
     class Meta:
         model = Carts
         fields = [
             "customer",
             "products"
         ]
-
 class ConcluirCartsSerializer(serializers.Serializer):
     products = ProductsCartSerializer(many=True)
     class Meta:
@@ -74,3 +85,4 @@ class ConcluirCartsSerializer(serializers.Serializer):
         fields = [
             "products"
         ]
+

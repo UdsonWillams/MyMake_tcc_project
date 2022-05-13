@@ -8,6 +8,6 @@ class ProductsAdmin(admin.ModelAdmin):
         "name",
         "price",
     ]
-    
+    readonly_fields=('cart_quantity',)
 
 admin.site.register(Products, ProductsAdmin)
